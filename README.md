@@ -28,3 +28,5 @@ The purpose of this assignment is to implement a deployment pipeline with separa
 Original project: https://github.com/TheDanniCraft/activity-log
 
 See the original repository for the software's complete usage instructions and configuration options.
+
+Automatic issue closure test
