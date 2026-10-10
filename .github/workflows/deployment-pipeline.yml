@@ -62,3 +62,56 @@ jobs:
             --prerelease \
             --target "$GITHUB_SHA" || \
           gh release upload "dev-${GITHUB_SHA::7}" dist/index.js --clobber
+  staging:
+    name: Staging Release
+    needs: dev
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    environment: staging
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: activity-log-dist
+          path: dist/
+
+      - name: Create staging release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "staging-${GITHUB_SHA::7}" dist/index.js \
+            --title "Staging ${GITHUB_SHA::7}" \
+            --notes "Staging release for commit ${GITHUB_SHA}" \
+            --prerelease \
+            --target "$GITHUB_SHA" || \
+          gh release upload "staging-${GITHUB_SHA::7}" dist/index.js --clobber
+
+  production:
+    name: Production Release
+    needs: staging
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: activity-log-dist
+          path: dist/
+
+      - name: Create production release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "prod-${GITHUB_SHA::7}" dist/index.js \
+            --title "Production ${GITHUB_SHA::7}" \
+            --notes "Production release for commit ${GITHUB_SHA}" \
+            --target "$GITHUB_SHA"
