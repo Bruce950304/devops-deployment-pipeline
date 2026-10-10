@@ -1,0 +1,60 @@
+
+name: Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build project
+        run: bun run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: activity-log-dist
+          path: dist/
+          if-no-files-found: error
+
+  dev:
+    name: Development Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    environment: dev
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: activity-log-dist
+          path: dist/
+
+      - name: Create development release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "dev-${GITHUB_SHA::7}" dist/index.js \
+            --title "Development ${GITHUB_SHA::7}" \
+            --notes "Automated development release for commit ${GITHUB_SHA}" \
+            --prerelease \
+            --target "$GITHUB_SHA" || \
+          gh release upload "dev-${GITHUB_SHA::7}" dist/index.js --clobber
