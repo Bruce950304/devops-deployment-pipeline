@@ -34,6 +34,7 @@ jobs:
           path: dist/
           if-no-files-found: error
 
+
   dev:
     name: Development Release
     needs: build
@@ -44,6 +45,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
         with:
           name: activity-log-dist
           path: dist/
