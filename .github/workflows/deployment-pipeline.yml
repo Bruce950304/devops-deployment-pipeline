@@ -118,7 +118,7 @@ jobs:
             head -c 4000 commits.txt
             echo "=== END COMMITS ==="
           } > prompt.txt
-          - name: Run release-notes agent (Gemini)
+      - name: Run release-notes agent (Gemini)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
