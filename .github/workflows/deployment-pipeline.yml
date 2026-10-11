@@ -123,10 +123,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          curl -sS -i https://models.github.ai/inference/chat/completions \
+          echo "--- catalog (GET)"
+          curl -sS -o catalog.txt -w "HTTP %{http_code} %{content_type}\n" \
+            -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://models.github.ai/catalog/models
+          head -c 300 catalog.txt; echo
+          echo "--- chat (POST, full headers)"
+          curl -sS -o chat.txt -w "HTTP %{http_code} %{content_type}\n" \
+            https://models.github.ai/inference/chat/completions \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
             -H "Content-Type: application/json" \
-            -d '{"model":"openai/gpt-4o-mini","messages":[{"role":"user","content":"Say hi"}],"max_tokens":20}' | head -n 30
+            -d '{"model":"openai/gpt-4.1-mini","messages":[{"role":"user","content":"Say hi"}],"max_tokens":20}'
+          head -c 300 chat.txt; echo
       - name: Run release-notes agent
         id: ai
         uses: actions/ai-inference@v1
