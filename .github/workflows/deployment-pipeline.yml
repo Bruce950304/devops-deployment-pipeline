@@ -118,7 +118,15 @@ jobs:
             head -c 4000 commits.txt
             echo "=== END COMMITS ==="
           } > prompt.txt
-
+      - name: Debug GitHub Models endpoint
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -sS -i https://models.github.ai/inference/chat/completions \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"openai/gpt-4o-mini","messages":[{"role":"user","content":"Say hi"}],"max_tokens":20}' | head -n 30
       - name: Run release-notes agent
         id: ai
         uses: actions/ai-inference@v1
